@@ -16,15 +16,20 @@
 #ifndef __ADS1X15_H__
 #define __ADS1X15_H__
 
-#include <Adafruit_I2CDevice.h>
-#include <Arduino.h>
-#include <Wire.h>
+//#include <Adafruit_I2CDevice.h>
+//#include <Arduino.h>
+//#include <Wire.h>
+#include "mbed.h"
+
 
 /*=========================================================================
     I2C ADDRESS/BITS
     -----------------------------------------------------------------------*/
 #define ADS1X15_ADDRESS (0x48) ///< 1001 000 (ADDR = GND)
 /*=========================================================================*/
+
+#define ADS1115_CONVERSIONDELAY         (8)
+
 
 /*=========================================================================
     POINTER REGISTER
@@ -138,16 +143,19 @@ typedef enum {
     @brief  Sensor driver for the Adafruit ADS1X15 ADC breakouts.
 */
 /**************************************************************************/
-class Adafruit_ADS1X15 {
+class Adafruit_ADS1115 {
 protected:
   // Instance-specific properties
-  Adafruit_I2CDevice *m_i2c_dev; ///< I2C bus device
-  uint8_t m_bitShift;            ///< bit shift amount
-  adsGain_t m_gain;              ///< ADC gain
+  uint8_t   m_i2cAddress;
+  uint8_t   m_conversionDelay;
+  uint8_t   m_bitShift;
+  adsGain_t m_gain;
+  I2C*      m_i2c;
+
   uint16_t m_dataRate;           ///< Data rate
 
 public:
-  void begin(uint8_t i2c_addr = ADS1X15_ADDRESS, TwoWire *wire = &Wire);
+  Adafruit_ADS1115(I2C* i2c, uint8_t i2cAddress = ADS1X15_ADDRESS);
   int16_t readADC_SingleEnded(uint8_t channel);
   int16_t readADC_Differential_0_1();
   int16_t readADC_Differential_2_3();
@@ -161,29 +169,10 @@ public:
 
 private:
   bool conversionComplete();
-  void writeRegister(uint8_t reg, uint16_t value);
-  uint16_t readRegister(uint8_t reg);
+  void writeRegister(uint8_t i2cAddress, uint8_t reg, uint16_t value);
+  uint16_t readRegister(uint8_t i2cAddress, uint8_t reg);
   uint8_t buffer[3];
 };
 
-/**************************************************************************/
-/*!
-    @brief  Sensor driver for the Adafruit ADS1015 ADC breakout.
-*/
-/**************************************************************************/
-class Adafruit_ADS1015 : public Adafruit_ADS1X15 {
-public:
-  Adafruit_ADS1015();
-};
-
-/**************************************************************************/
-/*!
-    @brief  Sensor driver for the Adafruit ADS1115 ADC breakout.
-*/
-/**************************************************************************/
-class Adafruit_ADS1115 : public Adafruit_ADS1X15 {
-public:
-  Adafruit_ADS1115();
-};
 
 #endif
